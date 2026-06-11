@@ -35,7 +35,7 @@ inputs:
     required: false
     default: git status --porcelain
   pr-assignee:
-    description: 'Default assignee for the Pull rrequest'
+    description: 'Default assignee for the Pull request'
     required: false
     default: null
   pr-automerge:
@@ -91,20 +91,20 @@ runs:
           -H 'accept: application/json' \
           -H 'Authorization: token ${{ inputs.token }}' \
           -H 'Content-Type: application/json' \
-          -d '{
-          "assignee": "${{ inputs.pr-asignee }}",
-          "base": "${{ inputs.base }}",
-          "body": "${{ inputs.pr-body }}",
-          "head": "${{ inputs.pr-branch }}",
-          "title": "${{ inputs.pr-title }}"
-          }')
+          -d "$(jq -n \
+            --arg assignee '${{ inputs.pr-assignee }}' \
+            --arg base '${{ inputs.base }}' \
+            --arg body '${{ inputs.pr-body }}' \
+            --arg head '${{ inputs.pr-branch }}' \
+            --arg title '${{ inputs.pr-title }}' \
+            '{assignee: $assignee, base: $base, body: $body, head: $head, title: $title}')")
         # echo $response | jq .
         pr_number=$(echo $response | jq -r '.number')
         echo "PR Number: $pr_number"
         echo pr_number=$pr_number >> $GITHUB_OUTPUT
     - name: "Auto merge PR"
       shell: bash
-      if: steps.git.outputs.changes == 'true' && steps.commit.outputs.pr_number != 'null'
+      if: steps.git.outputs.changes == 'true' && steps.commit.outputs.pr_number != 'null' && inputs.pr-automerge == 'true'
       env:
         PR_NUMBER: ${{ steps.commit.outputs.pr_number }}
         REPO: ${{ github.repository }}
