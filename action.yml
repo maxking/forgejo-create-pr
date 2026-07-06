@@ -51,7 +51,10 @@ inputs:
     required: false
     default: 'forgejo@users.noreply.git'
 
-
+outputs:
+  pr_number:
+    description: 'The number of the created PR'
+    value: ${{ steps.commit.outputs.pr_number }}
 
 runs:
   using: "composite"
@@ -109,7 +112,7 @@ runs:
         PR_NUMBER: ${{ steps.commit.outputs.pr_number }}
         REPO: ${{ github.repository }}
       run: |
-          echo "Settig auto merge for PR $PR_NUMBER"
+          echo "Setting auto merge for PR $PR_NUMBER"
           echo "URL: $GITHUB_SERVER_URL/api/v1/repos/$REPO/pulls/$PR_NUMBER/merge"
           response=$(curl -X 'POST' \
             "$GITHUB_SERVER_URL/api/v1/repos/$REPO/pulls/$PR_NUMBER/merge" \
